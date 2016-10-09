@@ -1,0 +1,70 @@
+Some helper scripts for unpacking, compiling and running multiple submissions.
+
+TODO
+        grade.sh :)
+
+New
+	better output
+	handle names with spaces (thanks a lot eclass)
+	separate compile and run phases
+	add grading template (auto copy it to each subdirectory)
+	write errors / warnings on file after compilation (if any)
+
+Features:
+        Pipe stdin from file
+        Match stdout with the expected output read from file
+        Color differences between obtained and expected output
+
+Dependencies:
+        1. https://github.com/noporpoise/seq-align
+
+Install:
+        1. Download and compile dependency #1.
+        2. Save the scripts in a directory (e.g. ~/ce120/scripts)
+        3. Set the ALIGN_TOOLS_PATH variable inside run.sh to point to the
+path of dependency #1.
+
+Run:
+        1. Create a file that contains the standard input for the program-under-
+test.
+            The program input is whatever getchar(), scanf() etc read from input.
+        2. Create a file that contains the expected output for this input.
+            The expected output is what printf(), putchar() etc prints.
+	3. Create a grading template to copy to each submission directory and fill it later.
+        4. See example below:
+           1. Run ./unpack.sh with the proper parameters.
+           2. Run ./compile.sh with the proper parameters.
+           3. Run ./run.sh with the proper parameters.
+
+Example:
+
+:~$ cd ce120/
+
+:~/ce120$ ls
+lab2  scripts
+
+:~/ce120$ ls scripts
+compile.sh  run.sh  unpack.sh
+
+:~/ce120$ ls lab2
+team1  team2  input  template  output
+
+:~/ce120$ cd lab2
+
+:~/ce120/lab2$ ../scripts/unpack.sh
+Working directory: ~/ce120/lab2
+
+UNPACK ./team1.tar.gz
+UNPACK ./team2.tar.gz
+
+:~/ce120/lab2$ ../scripts/compile.sh main.c
+Working directory: ~/ce120/lab2
+
+CC      team1/main.c
+CC      team2/main.c
+
+:~/ce120/lab2$ ../scripts/run.sh main.c --pass-stdin input --match-stdout output |less -r
+
+see snapshot
+
+feel free to hack around :)
