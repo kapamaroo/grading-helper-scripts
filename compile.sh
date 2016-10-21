@@ -88,7 +88,7 @@ function compile() {
     rm -rf $dir/$EXEC
     rm -rf $dir/$ERRORS
 
-    gcc -Wall -g $dir/$TEMPLATE -o $dir/$EXEC 2> $dir/$ERRORS
+    gcc -Wall -g -lm $dir/$TEMPLATE -o $dir/$EXEC 2> $dir/$ERRORS
     has_errors=$?
 
     # check for errors first
