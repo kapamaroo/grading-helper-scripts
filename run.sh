@@ -204,8 +204,6 @@ if [ "$EXPECTED" ]; then
     expected_output=`cat $EXPECTED`
 fi
 
-dirlist=`ls -d */`
-
 function print_legend() {
     echo -n "Color of characters: "
     print_missing "missing"
@@ -218,7 +216,7 @@ function print_legend() {
 
 print_legend
 
-for dir in $dirlist; do
+for dir in */; do
     dir=${dir::-1}
     echo
     echo
@@ -229,7 +227,7 @@ for dir in $dirlist; do
     print_info "============================================"
     echo
     # echo "--------------------------------------------"
-    if [ ! -f $dir/$EXEC ]; then
+    if [ ! -f "$dir"/$EXEC ]; then
         print_error "missing"
         echo
         continue
@@ -240,9 +238,9 @@ for dir in $dirlist; do
     # echo "--------------------------------------------"
     # output=$(cat $STDIN |./$dir/$EXEC $EXEC_PARAMS |tee /dev/tty)
     if [ "$STDIN" ]; then
-        output=$(cat $STDIN |./$dir/$EXEC $EXEC_PARAMS)
+        output=$(cat $STDIN |./"$dir"/$EXEC $EXEC_PARAMS)
     else
-        output=$(./$dir/$EXEC $EXEC_PARAMS)
+        output=$(./"$dir"/$EXEC $EXEC_PARAMS)
     fi
     print_output "$output" "$expected_output"
     echo

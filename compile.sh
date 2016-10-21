@@ -66,18 +66,16 @@ echo
 EXEC=`basename $TEMPLATE .c`
 ERRORS=`basename $TEMPLATE .c`.errors
 
-dirlist=`ls -d */`
-
 function compile() {
-    local dir=$1
+    local dir="$1"
     dir=${dir::-1}
-    if [ ! -f $dir/$TEMPLATE ]; then
+    if [ ! -f "$dir"/$TEMPLATE ]; then
         print_error "MISSING "
         echo -n "$dir/"
         print_error "$TEMPLATE"
         echo
         return
-    elif [ ! -f $dir/$EXEC ]; then
+    elif [ ! -f "$dir"/$EXEC ]; then
         echo -n "CC      $dir/$TEMPLATE"
     else
         print_info "SKIP    "
@@ -85,10 +83,10 @@ function compile() {
     fi
 
     # remove any previous executable and errors file
-    rm -rf $dir/$EXEC
-    rm -rf $dir/$ERRORS
+    rm -rf "$dir"/$EXEC
+    rm -rf "$dir"/$ERRORS
 
-    gcc -Wall -g -lm $dir/$TEMPLATE -o $dir/$EXEC 2> $dir/$ERRORS
+    gcc -Wall -g -lm "$dir"/$TEMPLATE -o "$dir"/$EXEC 2> "$dir"/$ERRORS
     has_errors=$?
 
     # check for errors first
@@ -99,11 +97,11 @@ function compile() {
     fi
 
     # also check for warnings, after successful compilation
-    if [ -s $dir/$ERRORS ]; then
+    if [ -s "$dir"/$ERRORS ]; then
         print_warning "  -  WARNINGS!  see $dir/$ERRORS"
     else
         # valid input, remove errors file
-        rm -rf $dir/$ERRORS
+        rm -rf "$dir"/$ERRORS
     fi
 
     # bad_indentation=`cat -T $dir/$TEMPLATE |grep -c ^' '`
@@ -114,7 +112,7 @@ function compile() {
     echo
 }
 
-for dir in $dirlist; do
+for dir in */; do
     compile "$dir"
 done
 
