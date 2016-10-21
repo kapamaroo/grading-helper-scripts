@@ -23,7 +23,7 @@ function unpack {
     local tgz="$1"
     local ext="$2"
 
-    expected_dir_name="`basename "$tgz" "$ext"`"
+    expected_dir_name="`basename "$tgz" "$ext"`"/
     # pipe to sort at the end to avoid duplicate names from hard links
     # subdir=`tar tvf "$tgz" |grep ^d |rev |cut -d' ' -f1 |rev |sort -u`
     subdir=`tar tf "$tgz" |grep /$ |sort -u`
@@ -32,12 +32,18 @@ function unpack {
     # echo $subdir
 
     WARN_ON_EXEC=1
-    if [ -d $subdir ]; then
+    if [[ -d "$subdir" || -d "$expected_dir_name" ]]; then
         # subdirectory already exists before unpacking and may contain executables
         # from previous runs, ignore them
         WARN_ON_EXEC=0
         print_info "SKIP   "
         echo -n "$tgz"
+        print_info " --> "
+        if [ -d "$subdir" ]; then
+            echo -n "$subdir"
+        else
+            print_warning "$expected_dir_name"
+        fi
         echo
         return
     else
@@ -45,10 +51,12 @@ function unpack {
     fi
 
     if [ -z "$subdir" ]; then
-        print_error "  -  has no subdirectory, create '$expected_dir_name'"
-        mkdir -p $expected_dir_name
-        tar xzf "$tgz" -C $expected_dir_name
-        subdir=$expected_dir_name
+        print_warning "  -  no subdir"
+        print_info " --> "
+        print_warning "'$expected_dir_name'"
+        mkdir -p "$expected_dir_name"
+        tar xzf "$tgz" -C "$expected_dir_name"
+        subdir="$expected_dir_name"
     else
         subdir=${subdir::-1}
         tar xzf "$tgz"
@@ -62,12 +70,12 @@ function unpack {
     if [ -z "$src_files" ]; then
         print_error "  -  no source code files '*.c'"
     fi
-    has_executable=`find $subdir/ -executable -type f`
+    has_executable=`find "$subdir"/ -executable -type f`
     if [ "$has_executable" ] && [ $WARN_ON_EXEC -eq 1 ]; then
         print_error "  -  has executable"
     fi
     # touch $subdir/notes
-    cp template $subdir/notes
+    cp template "$subdir"/notes
     echo
 }
 
