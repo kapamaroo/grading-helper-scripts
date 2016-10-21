@@ -75,11 +75,11 @@ function compile() {
         print_error "$TEMPLATE"
         echo
         return
-    elif [ ! -f "$dir"/$EXEC ]; then
-        echo -n "CC      $dir/$TEMPLATE"
-    else
+    elif [ -f "$dir"/$EXEC ]; then
         print_info "SKIP    "
         echo -n "$dir/$TEMPLATE"
+        echo
+        return
     fi
 
     # remove any previous executable and errors file
@@ -91,9 +91,15 @@ function compile() {
 
     # check for errors first
     if [ $has_errors -ne 0 ]; then
-        print_error "  -  Abort execution due to compile errors"
-        echo "____________________________________________"
+        print_error "ERRORS  "
+        echo -n "$dir/"
+        print_error "$TEMPLATE"
+        print_info " --> "
+        print_error "$ERRORS"
+        echo
         return
+    else
+        echo -n "CC      $dir/$TEMPLATE"
     fi
 
     # also check for warnings, after successful compilation
