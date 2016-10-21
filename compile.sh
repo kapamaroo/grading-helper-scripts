@@ -65,6 +65,7 @@ echo
 
 EXEC=`basename $TEMPLATE .c`
 ERRORS=`basename $TEMPLATE .c`.errors
+WARNINGS=`basename $TEMPLATE .c`.warnings
 
 function compile() {
     local dir="$1"
@@ -76,8 +77,17 @@ function compile() {
         echo
         return
     elif [ -f "$dir"/$EXEC ]; then
-        print_info "SKIP    "
-        echo -n "$dir/$TEMPLATE"
+        if [ -f "$dir"/$WARNINGS ]; then
+            print_warning "SKIP    "
+            echo -n "$dir/"
+            print_warning "$TEMPLATE"
+            print_info " --> "
+            print_warning "$WARNINGS"
+        else
+            print_info "SKIP    "
+            echo -n "$dir/"
+            echo -n "$TEMPLATE"
+        fi
         echo
         return
     fi
@@ -85,28 +95,29 @@ function compile() {
     # remove any previous executable and errors file
     rm -rf "$dir"/$EXEC
     rm -rf "$dir"/$ERRORS
+    rm -rf "$dir"/$WARNINGS
 
     gcc -Wall -g -lm "$dir"/$TEMPLATE -o "$dir"/$EXEC 2> "$dir"/$ERRORS
     has_errors=$?
 
     # check for errors first
     if [ $has_errors -ne 0 ]; then
-        print_error "ERRORS  "
+        print_error "CC      "
         echo -n "$dir/"
         print_error "$TEMPLATE"
         print_info " --> "
         print_error "$ERRORS"
-        echo
-        return
-    else
-        echo -n "CC      $dir/$TEMPLATE"
-    fi
-
-    # also check for warnings, after successful compilation
-    if [ -s "$dir"/$ERRORS ]; then
-        print_warning "  -  WARNINGS!  see $dir/$ERRORS"
+    elif [ -s "$dir"/$ERRORS ]; then
+        # also check for warnings, after successful compilation
+        mv "$dir"/$ERRORS "$dir"/$WARNINGS
+        print_warning "CC      "
+        echo -n "$dir/"
+        print_warning "$TEMPLATE"
+        print_info " --> "
+        print_warning "$WARNINGS"
     else
         # valid input, remove errors file
+        echo -n "CC      $dir/$TEMPLATE"
         rm -rf "$dir"/$ERRORS
     fi
 
