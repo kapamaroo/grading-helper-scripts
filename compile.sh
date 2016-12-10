@@ -10,7 +10,7 @@ if [ $# -lt 1 ]; then
     echo "Give a working directory of submissions (default: current directory)"
     echo "and a C source file to compile"
     echo
-    echo "Example:  $0 [submissions-dir] lab1.c"
+    echo "Example:  $0 [submissions-dir] lab1.c [extra-compiler-args]"
     echo
     exit
 fi
@@ -48,6 +48,8 @@ COLOR_WHITE=7
 
 TEMPLATE=$1
 shift
+
+EXTRA_CFLAGS="$@"
 
 if [ "$TEMPLATE" == ".c" ]; then
     echo "not a C source file"
@@ -97,7 +99,7 @@ function compile() {
     rm -rf "$dir"/$ERRORS
     rm -rf "$dir"/$WARNINGS
 
-    gcc -Wall -g -lm "$dir"/$TEMPLATE -o "$dir"/$EXEC 2> "$dir"/$ERRORS
+    gcc -Wall -g "$dir"/$TEMPLATE $EXTRA_CFLAGS -o "$dir"/$EXEC 2> "$dir"/$ERRORS
     has_errors=$?
 
     # check for errors first
