@@ -190,9 +190,6 @@ fi
 EXEC=`basename $TEMPLATE .c`
 ERRORS=`basename $TEMPLATE .c`.errors
 
-echo "Working directory: $SRCDIR"
-cd $SRCDIR
-
 echo "Compile $TEMPLATE to $EXEC"
 echo
 # echo "argv      : $EXEC_PARAMS"
@@ -231,7 +228,7 @@ function run() {
     if [ ! -f "$dir"/$EXEC ]; then
         print_error "missing"
         echo
-        continue
+        return
     fi
 
     # echo
@@ -246,6 +243,9 @@ function run() {
     print_output "$output" "$expected_output"
     echo
 }
+
+echo "Working directory: $SRCDIR"
+cd $SRCDIR
 
 for dir in */; do
     run "$dir"
