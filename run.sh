@@ -9,7 +9,7 @@
 #################################################################
 ###    Config   ###
 
-ALIGN_TOOLS_PATH=/opt/src/seq-align/
+ALIGN_TOOLS_PATH=.
 ALIGN_TOOL="$ALIGN_TOOLS_PATH"/bin/needleman_wunsch
 
 #################################################################
