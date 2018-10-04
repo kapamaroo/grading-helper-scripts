@@ -216,7 +216,8 @@ function print_legend() {
 
 print_legend
 
-for dir in */; do
+function run() {
+    local dir="$1"
     dir=${dir::-1}
     echo
     echo
@@ -244,6 +245,10 @@ for dir in */; do
     fi
     print_output "$output" "$expected_output"
     echo
+}
+
+for dir in */; do
+    run "$dir"
 done
 
 cd $OLDDIR
