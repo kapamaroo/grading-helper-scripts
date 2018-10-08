@@ -9,7 +9,7 @@
 #################################################################
 ###    Config   ###
 
-ALIGN_TOOLS_PATH=.
+ALIGN_TOOLS_PATH=`dirname $0`
 ALIGN_TOOL="$ALIGN_TOOLS_PATH"/bin/needleman_wunsch
 
 #################################################################
@@ -22,17 +22,16 @@ if [ ! -x "$ALIGN_TOOL" ]; then
 fi
 
 if [ $# -lt 1 ]; then
-    echo "Give a working directory of submissions (default: current directory)"
-    echo "and a C source file to compile"
+    echo "Give a submission directory (default: current directory)"
+    echo "and a C source file to run"
     echo "Also pass any execution arguments as extra parameters to this script"
     echo
-    echo "Example:  $0 [submissions-dir] lab1.c [program-args] [$PARAM_STDIN file] [$PARAM_STDOUT file]"
+    echo "Example:  $0 [submission-dir] lab1.c [program-args] [$PARAM_STDIN file] [$PARAM_STDOUT file]"
     echo
     exit
 fi
 
 OLDDIR=`pwd`
-SRCDIR=`pwd`
 
 function print_error {
     echo -n "$(tput setaf 1)$@$(tput sgr0)"
@@ -45,13 +44,6 @@ function print_warning {
 function print_info {
     echo -n "$(tput setaf 6)$@$(tput sgr0)"
 }
-
-if [ -d $1 ]; then
-    if [ "$1" != "." ]; then
-        SRCDIR=$1
-    fi
-    shift
-fi
 
 COLOR_BLACK=0
 COLOR_RED=1
@@ -146,8 +138,20 @@ function print_output {
     done
 }
 
+SRCDIR=`pwd`
+if [ -d $1 ]; then
+    SRCDIR=`readlink -f $1`
+    shift
+fi
+
 TEMPLATE=$1
 shift
+
+echo $TEMPLATE | grep -q -e '^[^.].*\.c$'
+if [ $? -eq 1 ]; then
+    echo "'$TEMPLATE' not a C source file"
+    exit
+fi
 
 # parse argumets to the porgram
 EXEC_PARAMS=
@@ -177,21 +181,9 @@ while [ $# -ne 0 ]; do
     fi
 done
 
-if [ "$TEMPLATE" == ".c" ]; then
-    echo "not a C source file"
-    exit
-fi
-
-if [[ ! "${TEMPLATE}" =~ \.c$ ]]; then
-    echo "not a C source file"
-    exit
-fi
-
 EXEC=`basename $TEMPLATE .c`
 ERRORS=`basename $TEMPLATE .c`.errors
 
-echo "Compile $TEMPLATE to $EXEC"
-echo
 # echo "argv      : $EXEC_PARAMS"
 # echo "stdin     : $STDIN"
 # echo "match with: $EXPECTED"
@@ -214,8 +206,7 @@ function print_legend() {
 print_legend
 
 function run() {
-    local dir="$1"
-    dir=${dir::-1}
+    local dir=`basename $1`
     echo
     echo
     print_info "============================================"
@@ -225,7 +216,7 @@ function run() {
     print_info "============================================"
     echo
     # echo "--------------------------------------------"
-    if [ ! -f "$dir"/$EXEC ]; then
+    if [ ! -f $EXEC ]; then
         print_error "missing"
         echo
         return
@@ -234,23 +225,21 @@ function run() {
     # echo
     echo "$ ./$EXEC $EXEC_PARAMS"
     # echo "--------------------------------------------"
-    # output=$(cat $STDIN |./$dir/$EXEC $EXEC_PARAMS |tee /dev/tty)
+    # output=$(cat $STDIN |./$EXEC $EXEC_PARAMS |tee /dev/tty)
     if [ "$STDIN" ]; then
-        output=$(cat $STDIN |./"$dir"/$EXEC $EXEC_PARAMS)
+        output=$(cat $STDIN |./$EXEC $EXEC_PARAMS)
     else
-        output=$(./"$dir"/$EXEC $EXEC_PARAMS)
+        output=$(./$EXEC $EXEC_PARAMS)
     fi
     print_output "$output" "$expected_output"
     echo
 }
 
 echo "Working directory: $SRCDIR"
+echo
+
 cd $SRCDIR
-
-for dir in */; do
-    run "$dir"
-done
-
+run "$SRCDIR"
 cd $OLDDIR
 
 echo
