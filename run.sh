@@ -6,6 +6,15 @@
 # http://linuxcommand.org/lc3_adv_tput.php
 # https://en.wikipedia.org/wiki/Needleman%E2%80%93Wunsch_algorithm
 
+source lab.conf
+source colors.conf
+
+declare -A MISMATCH=(
+    ["whitespace"]=0
+    ["case"]=0
+    ["other"]=0
+)
+
 #################################################################
 ###    Config   ###
 
@@ -33,65 +42,11 @@ fi
 
 OLDDIR=`pwd`
 
-function print_error {
-    echo -n "$(tput setaf 1)$@$(tput sgr0)"
-}
-
-function print_warning {
-    echo -n "$(tput setaf 5)$@$(tput sgr0)"
-}
-
-function print_info {
-    echo -n "$(tput setaf 6)$@$(tput sgr0)"
-}
-
-COLOR_BLACK=0
-COLOR_RED=1
-COLOR_GREEN=2
-COLOR_YELLOW=3
-COLOR_BLUE=4
-COLOR_MAGENTA=5
-COLOR_CYAN=6
-COLOR_WHITE=7
-
-function print_color {
-    fg=$1
-    bg=$2
-
-    shift
-    shift
-
-    msg="$@"
-
-    # special case for newline
-    if [ "$msg" == $'\n' ]; then
-        #print extra character to mark the extra newline
-        echo -n "$(tput setaf $fg)$(tput setab $bg)\n$(tput sgr0)$msg"
-    else
-        echo -n "$(tput setaf $fg)$(tput setab $bg)$msg$(tput sgr0)"
-    fi
-}
-
-function print_missing {
-    print_color $COLOR_BLACK $COLOR_RED "$@"
-}
-
-function print_extra {
-    print_color $COLOR_BLACK $COLOR_YELLOW "$@"
-}
-
-function print_mismatch {
-    print_color $COLOR_BLACK $COLOR_MAGENTA "$@"
-}
-
-function print_output {
+function __check_output {
     output="$1"
     expected_output="$2"
 
-    if [ "$output" == "$expected_output" ]; then
-        echo "Correct output"
-        return
-    fi
+    RESULT=100
 
     # echo "---------------    output    ---------------"
 
@@ -121,21 +76,67 @@ function print_output {
         return
     fi
 
+    local prefix="\t"
+    local fix="-->\t"
+
+    if [ $STRICT_OUTPUT -eq 0 ]; then
+        ((case_ignore = 0))
+        ((whitespace = 0))
+        ((other = 0))
+    fi
+    local _res=""
+    echo -n -e "$prefix"
     for (( i=0; i<$size; i++)); do
         _o=${_output:$i:1}
         _g=${_golden:$i:1}
         if [ "$_o" == "$_g" ]; then
             echo -n "$_o"
+            _res+=" "
         elif [ "$_o" == "-" ]; then
             # missing character, print golden
             print_missing "$_g"
+            _res+="+"
         elif [ "$_g" == "-" ]; then
             # extra character
             print_extra "$_o"
+            _res+="-"
         else
             print_mismatch "$_o"
+            _res+="?"
+        fi
+        if [ $STRICT_OUTPUT -eq 0 ] && [ "$_g" != "$_o" ]; then
+            if [[ "$_g" =~ [[:space:]] ]]; then
+                ((whitespace++))
+            elif [[ "$_g" =~ [[:alpha:]] ]] && [ "${_g,,}" = "${_o,,}" ]; then
+                ((case_ignore++))
+            else
+                ((other++))
+            fi
+        fi
+        if [ "$_g" = $'\n' ]; then
+            if [ $SHOW_FIXLINE -eq 1 ]; then
+                if [ -n "${_res// }" ]; then
+                    echo -e "$fix$_res"
+                    echo
+                fi
+            fi
+            _res=""
+            echo -n -e "$prefix"
         fi
     done
+    echo
+
+    if [ $SHOW_FIXLINE -eq 1 ]; then
+        if [ -n "${_res// }" ]; then
+            echo -e "$fix$_res"
+        fi
+    fi
+
+    if [ $STRICT_OUTPUT -eq 0 ]; then
+        MISMATCH["whitespace"]=$whitespace
+        MISMATCH["case"]=$case_ignore
+        MISMATCH["other"]=$other
+    fi
 }
 
 SRCDIR=`pwd`
@@ -144,14 +145,46 @@ if [ -d $1 ]; then
     shift
 fi
 
-TEMPLATE=$1
+EXEC=$1
 shift
 
-echo $TEMPLATE | grep -q -e '^[^.].*\.c$'
-if [ $? -eq 1 ]; then
-    echo "'$TEMPLATE' not a C source file"
+if [ ! -x $EXEC ]; then
+    echo "'$EXEC' not executable"
     exit
 fi
+
+function check_output {
+    local output="$1"
+    local expected_output="$2"
+
+    if [ "$output" == "$expected_output" ]; then
+        echo "    Correct output"
+        RESULT=0
+        return
+    fi
+
+    ((_res = ${MISMATCH["other"]}))
+    __check_output "$output" "$expected_output"
+
+    if [ $STRICT_OUTPUT -eq 1 ]; then
+        RESULT=$_res
+        return
+    fi
+
+    if [ ${MISMATCH["other"]} -gt 0 ]; then
+        ((_res = ${PENALTY["other"]}))
+    elif [ ${MISMATCH["whitespace"]} -gt 0 ] && [ ${MISMATCH["case"]} -gt 0 ]; then
+        ((_res = ${PENALTY["whitespace"]} + ${PENALTY["case"]}))
+    elif [ ${MISMATCH["whitespace"]} -gt 0 ]; then
+        ((_res = ${PENALTY["whitespace"]}))
+    elif [ ${MISMATCH["case"]} -gt 0 ]; then
+        ((_res = ${PENALTY["case"]}))
+    fi
+
+    RESULT=$_res
+
+    echo "    -$RESULT %"
+}
 
 # parse argumets to the porgram
 EXEC_PARAMS=
@@ -181,9 +214,6 @@ while [ $# -ne 0 ]; do
     fi
 done
 
-EXEC=`basename $TEMPLATE .c`
-ERRORS=`basename $TEMPLATE .c`.errors
-
 # echo "argv      : $EXEC_PARAMS"
 # echo "stdin     : $STDIN"
 # echo "match with: $EXPECTED"
@@ -194,6 +224,10 @@ if [ "$EXPECTED" ]; then
 fi
 
 function print_legend() {
+    if [ $SHOW_COLOR -eq 0 ]; then
+        return
+    fi
+
     echo -n "Color of characters: "
     print_missing "missing"
     echo -n " "
@@ -203,17 +237,18 @@ function print_legend() {
     echo
 }
 
-print_legend
-
 function run() {
     local dir=`basename $1`
+    # echo
+    print_separator
     echo
+    if [ -n "$STDIN" ]; then
+        print_info "    $ ./$EXEC < $(basename $STDIN) > $(basename $EXPECTED)"
+    else
+        print_info "    $ ./$EXEC > $(basename $EXPECTED)"
+    fi
     echo
-    print_info "============================================"
-    echo
-    print_info "    $dir"
-    echo
-    print_info "============================================"
+    print_separator
     echo
     # echo "--------------------------------------------"
     if [ ! -f $EXEC ]; then
@@ -223,7 +258,7 @@ function run() {
     fi
 
     # echo
-    echo "$ ./$EXEC $EXEC_PARAMS"
+    # echo "$ ./$EXEC $EXEC_PARAMS"
     # echo "--------------------------------------------"
     # output=$(cat $STDIN |./$EXEC $EXEC_PARAMS |tee /dev/tty)
     if [ "$STDIN" ]; then
@@ -231,19 +266,25 @@ function run() {
     else
         output=$(./$EXEC $EXEC_PARAMS)
     fi
-    print_output "$output" "$expected_output"
+    check_output "$output" "$expected_output"
     echo
 }
 
-echo "Working directory: $SRCDIR"
-echo
+# print_legend
+
+# echo "Working directory: $SRCDIR"
+# echo
+
+RESULT=0
 
 cd $SRCDIR
 run "$SRCDIR"
 cd $OLDDIR
 
-echo
+# echo
 # echo "--------------------------------------------"
-print_legend
-echo
-echo "Done"
+# print_legend
+# echo
+# echo "Done"
+
+exit $RESULT

@@ -2,10 +2,10 @@
 
 if [ $# -lt 1 ]; then
     echo "Give a working directory of submissions (default: current directory)"
-    echo "and a C source file to run"
+    echo "and the name of the executable to run"
     echo "Also pass any execution arguments as extra parameters to this script"
     echo
-    echo "Example:  $0 [submissions-dir] lab1.c [program-args] [$PARAM_STDIN file] [$PARAM_STDOUT file]"
+    echo "Example:  $0 [submissions-dir] lab1 [program-args] [$PARAM_STDIN file] [$PARAM_STDOUT file]"
     echo
     exit
 fi
