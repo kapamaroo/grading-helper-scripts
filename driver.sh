@@ -5,6 +5,8 @@ source colors.conf
 
 ################################################################################
 
+ERROR=1
+
 ((active_len=0))
 for i in "${!GRADING[@]}"; do
     if [ "${i::1}" != "-" ]; then
@@ -26,7 +28,11 @@ function exit() {
         else
             name=$i
         fi
-        echo -n "\"$name\": ${GRADING[$i]}"
+        if [ $ERROR -eq 0 ]; then
+            echo -n "\"$name\": ${GRADING[$i]}"
+        else
+            echo -n "\"$name\": 0"
+        fi
         if [ $len -gt 0 ]; then
             echo -n ","
         fi
@@ -59,6 +65,7 @@ echo "Getting files..."
 if [ $? -ne 0 ]; then
     print_error "Cannot extract $COMPRESSED"
     echo
+    GRADING["Submission"]=0
     exit
 fi
 
@@ -72,10 +79,8 @@ function driver() {
     (make clean; make $LAB$exec)
     status=$?
     if [ ${status} -ne 0 ]; then
-        return
+        GRADING[$exec"_Compilation"]=0
     fi
-
-    GRADING[$exec"_Compilation"]=100
 
     # echo "Running ./$LAB$exec"
     num_tests=`ls $TESTS_DIR/$exec"_out_"* |wc -l`
@@ -88,19 +93,27 @@ function driver() {
             continue
         fi
 
+        if [ ! -f $LAB$exec ]; then
+            GRADING[$exec"_out_"$i]=0
+            continue
+        fi
+
         if [ -f $TESTS_DIR/$exec"_in_"$i ]; then
             ./run.sh $LAB$exec --pass-stdin $TESTS_DIR/$exec"_in_"$i --match-stdout $TESTS_DIR/$exec"_out_"$i
         else
             ./run.sh $LAB$exec --match-stdout $TESTS_DIR/$exec"_out_"$i
         fi
+        ((result = 100 - $?))
 
-        local result=$?
-
-        if [ ${GRADING[$exec"_out_"$i]+a} ]; then
-            GRADING[$exec"_out_"$i]=$((100 - $result))
+        local max=${GRADING[$exec"_out_"$i]}
+        GRADING[$exec"_out_"$i]=`bc <<< "scale=2; a=${result}/100 * ${max}; scale=0; a/1"`
+        if [ ${GRADING[$exec"_out_"$i]} -ne $max ]; then
+            echo "points: ${GRADING[$exec"_out_"$i]} of $max"
         fi
     done
 }
+
+ERROR=0
 
 for exec in $EXEC_LIST; do
     driver $exec
