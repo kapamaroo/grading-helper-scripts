@@ -223,6 +223,11 @@ if [ "$EXPECTED" ]; then
     expected_output=`cat $EXPECTED`
 fi
 
+TIMEOUT=
+if [ $TIMEOUT_LIMIT -gt 0 ]; then
+    TIMEOUT="timeout $TIMEOUT_LIMIT"
+fi
+
 function print_legend() {
     if [ $SHOW_COLOR -eq 0 ]; then
         return
@@ -262,11 +267,18 @@ function run() {
     # echo "--------------------------------------------"
     # output=$(cat $STDIN |./$EXEC $EXEC_PARAMS |tee /dev/tty)
     if [ "$STDIN" ]; then
-        output=$(cat $STDIN |./$EXEC $EXEC_PARAMS)
+        output=$(cat $STDIN |$TIMEOUT ./$EXEC $EXEC_PARAMS)
     else
-        output=$(./$EXEC $EXEC_PARAMS)
+        output=$($TIMEOUT ./$EXEC $EXEC_PARAMS)
     fi
-    check_output "$output" "$expected_output"
+
+    local timeout=$?
+    if [ $timeout -eq 0 ]; then
+        check_output "$output" "$expected_output"
+    else
+        print_error "Execution takes too long (timemout = $TIMEOUT_LIMIT seconds)"
+        echo
+    fi
     echo
 }
 
