@@ -47,7 +47,7 @@ function check_file() {
     done
 
     if [ -n "$missing" ]; then
-        echo "Submit you work again including all missing files."
+        echo "Submit your work again including all missing files."
         exit
     fi
 }
