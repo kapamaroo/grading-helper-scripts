@@ -1,35 +1,14 @@
 #!/bin/bash
 
-# give the directory of submissions as parameter [default: current directory]
-
-EXTENSIONS=".tgz .tar.gz"
-
-OLDDIR=`pwd`
-SRCDIR=`pwd`
-
-function print_error {
-    echo -n "$(tput setaf 1)$@$(tput sgr0)"
-}
-
-function print_warning {
-    echo -n "$(tput setaf 5)$@$(tput sgr0)"
-}
-
-function print_info {
-    echo -n "$(tput setaf 6)$@$(tput sgr0)"
-}
+source lab.conf
+source colors.conf
 
 function unpack {
     local tgz="$1"
     local ext="$2"
 
     expected_dir_name="`basename "$tgz" "$ext"`"/
-    # pipe to sort at the end to avoid duplicate names from hard links
-    # subdir=`tar tvf "$tgz" |grep ^d |rev |cut -d' ' -f1 |rev |sort -u`
     subdir=`tar tf "$tgz" |grep /$ |sort -u`
-
-    # echo
-    # echo $subdir
 
     WARN_ON_EXEC=1
     if [[ -d "$subdir" || -d "$expected_dir_name" ]]; then
@@ -46,8 +25,8 @@ function unpack {
         fi
         echo
         return
-    else
-        echo -n "UNPACK $tgz"
+    # else
+    #    echo -n "UNPACK $tgz"
     fi
 
     if [ -z "$subdir" ]; then
@@ -58,15 +37,14 @@ function unpack {
         tar xzf "$tgz" -C "$expected_dir_name"
         subdir="$expected_dir_name"
     else
-        subdir=${subdir::-1}
         tar xzf "$tgz"
+        if [ "$subdir" != "$expected_dir_name" ]; then
+            print_warning " - move $subdir to $expected_dir_name"
+            mv "$subdir" "$expected_dir_name"
+            subdir="$expected_dir_name"
+        fi
     fi
-    # basename of compressed file and compressed directory must be the same
-    #
-    # if [ ! -d "$expected_dir_name" ]; then
-    #     print_error "  -  Name mismatch: '$expected_dir_name' instead of '$subdir'"
-    # fi
-    src_files=`tar tf "$tgz" |grep '.c'`
+    src_files=`find "$subdir" -name "*.c"`
     if [ -z "$src_files" ]; then
         print_error "  -  no source code files '*.c'"
     fi
@@ -75,24 +53,26 @@ function unpack {
         print_error "  -  has executable"
     fi
     # touch $subdir/notes
-    cp template "$subdir"/notes
-    echo
+    # cp template "$subdir"/notes
+
+    for f in $src_files; do
+        echo "$(basename $f)"
+        mv "$f" "$(basename "$f")"
+    done
+
+    for f in $EXTRA_FILES; do
+        echo "$f"
+        mv "$subdir/$f" "$f"
+    done
 }
 
-if [ $# -eq 1 ] && [ -d $1 ] && [ "$1" != "." ]; then
-    SRCDIR=$1
+if [ ! -f "$1" ]; then
+    exit 100
+fi
+tar tf "$1" &> /dev/null
+result=$?
+if [ $result -ne 0 ]; then
+    exit 100
 fi
 
-echo "Working directory: $SRCDIR"
-echo
-cd $SRCDIR
-
-for ext in $EXTENSIONS; do
-    # maxdepth 1, ignore leftovers of previous tries to create the compressed file
-    find . -maxdepth 1 -type f -name "*$ext" -print0 | while IFS= read -r -d '' file; do
-        unpack "$file" "$ext"
-    done
-done
-
-cd $OLDDIR
-echo
+unpack "$1" "$2"
