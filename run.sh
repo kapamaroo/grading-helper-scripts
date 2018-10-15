@@ -149,8 +149,9 @@ EXEC=$1
 shift
 
 if [ ! -x $EXEC ]; then
-    echo "'$EXEC' not executable"
-    exit
+    print_error "'$EXEC' not executable"
+    echo
+    exit 100
 fi
 
 function check_output {
@@ -219,7 +220,18 @@ done
 # echo "match with: $EXPECTED"
 # echo
 
+if [ "$STDIN" ] && [ ! -f "$STDIN" ]; then
+    print_error "Missing input file: $STDIN"
+    echo
+    exit 100
+fi
+
 if [ "$EXPECTED" ]; then
+    if [ ! -f "$EXPECTED" ]; then
+        print_error "Missing output file: $EXPECTED"
+        echo
+        exit 100
+    fi
     expected_output=`cat $EXPECTED`
 fi
 
