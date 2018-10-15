@@ -55,7 +55,12 @@ function check_file() {
 ################################################################################
 
 echo "Getting files..."
-tar xzf $COMPRESSED
+./unpack.sh $COMPRESSED ".tar.gz"
+if [ $? -ne 0 ]; then
+    print_error "Cannot extract $COMPRESSED"
+    echo
+    exit
+fi
 
 check_file "$EXTRA_FILES"
 
