@@ -1,15 +1,5 @@
 Some helper scripts for unpacking, compiling and running multiple submissions.
 
-TODO
-        grade.sh :)
-
-New
-	better output
-	handle names with spaces (thanks a lot eclass)
-	separate compile and run phases
-	add grading template (auto copy it to each subdirectory)
-	write errors / warnings on file after compilation (if any)
-
 Features:
         Pipe stdin from file
         Match stdout with the expected output read from file
@@ -36,35 +26,33 @@ test.
            2. Run ./compile.sh with the proper parameters.
            3. Run ./run.sh with the proper parameters.
 
-Example:
+Autolab example:
+:~$ make clean autolab test
+
+Manual example:
 
 :~$ cd ce120/
 
 :~/ce120$ ls
 lab2  scripts
 
-:~/ce120$ ls scripts
-compile.sh  run.sh  unpack.sh
-
 :~/ce120$ ls lab2
 team1  team2  input  template  output
 
 :~/ce120$ cd lab2
 
-:~/ce120/lab2$ ../scripts/unpack.sh
+:~/ce120/lab2$ ../scripts/unpack-all.sh
 Working directory: ~/ce120/lab2
 
 UNPACK ./team1.tar.gz
 UNPACK ./team2.tar.gz
 
-:~/ce120/lab2$ ../scripts/compile.sh main.c
+:~/ce120/lab2$ ../scripts/compile-all.sh main.c
 Working directory: ~/ce120/lab2
 
 CC      team1/main.c
 CC      team2/main.c
 
-:~/ce120/lab2$ ../scripts/run.sh main.c --pass-stdin input --match-stdout output |less -r
-
-see snapshot
+:~/ce120/lab2$ ../scripts/run.sh main --pass-stdin input --match-stdout output |less -r
 
 feel free to hack around :)
