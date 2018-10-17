@@ -1,0 +1,10 @@
+# Student makefile for Practice Lab
+
+lab2a:
+	@gcc -Wall lab2a.c -o lab2a
+
+lab2b:
+	@gcc -Wall lab2b.c -o lab2b
+
+clean:
+	@rm -rf *~ lab2a lab2b
