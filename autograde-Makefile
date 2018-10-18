@@ -1,5 +1,5 @@
 all:
-	@tar xvf autograde.tar.gz > /dev/null
+	@tar xvf autograde.tar > /dev/null
 	@cp lab2submit.tar.gz autograde
 	@(cd autograde; ./driver.sh)
 

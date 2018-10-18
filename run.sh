@@ -76,8 +76,8 @@ function __check_output {
         return
     fi
 
-    local prefix="\t"
-    local fix="-->\t"
+    local prefix="        "
+    local fix="-->     "
 
     if [ $STRICT_OUTPUT -eq 0 ]; then
         ((case_ignore = 0))

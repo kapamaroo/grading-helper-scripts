@@ -5,7 +5,7 @@ autograde:
 	cp -r unpack.sh run.sh driver.sh colors.conf lab.conf bin tests autolab/autograde
 	cp lab-Makefile autolab/autograde/Makefile
 
-	tar -C autolab -czvf autolab/autograde.tar.gz autograde --exclude=\.directory
+	tar -C autolab -cvf autolab/autograde.tar autograde --exclude=\.directory
 	rm -rf autolab/autograde
 
 test:

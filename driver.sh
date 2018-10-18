@@ -65,7 +65,7 @@ echo "Getting files..."
 if [ $? -ne 0 ]; then
     print_error "Cannot extract $COMPRESSED"
     echo
-    GRADING["Submission"]=0
+    GRADING["submission"]=0
     exit
 fi
 
@@ -79,7 +79,7 @@ function driver() {
     (make clean; make $LAB$exec)
     status=$?
     if [ ${status} -ne 0 ]; then
-        GRADING[$exec"_Compilation"]=0
+        GRADING[$exec"_compilation"]=0
     fi
 
     # echo "Running ./$LAB$exec"
