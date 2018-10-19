@@ -5,12 +5,22 @@ source colors.conf
 
 ################################################################################
 
+declare -A NAMES=()
+
 ERROR=1
 
 ((active_len=0))
 for i in "${!GRADING[@]}"; do
-    if [ "${i::1}" != "-" ]; then
-        ((active_len++))
+    if [ "${i::1}" = "-" ]; then
+        continue
+    fi
+
+    ((active_len++))
+
+    IFS=',' read -a testcase <<< "${GRADING[$i]}"
+    if [ -n "${testcase[1]}" ]; then
+        NAMES["$i"]="${testcase[1]}"
+        GRADING["$i"]=${testcase[0]}
     fi
 done
 
@@ -18,13 +28,12 @@ function exit() {
     echo -n "{\"scores\": {"
     ((len=$active_len))
     for i in "${!GRADING[@]}"; do
-        # echo "PRE  $i"
         if [ "${i::1}" = "-" ]; then
             continue
         fi
         ((len--))
-        if [ ${NAMES[$i]+a} ]; then
-            name=${NAMES[$i]}
+        if [ ${NAMES["$i"]+a} ]; then
+            name=${NAMES["$i"]}
         else
             name=$i
         fi
