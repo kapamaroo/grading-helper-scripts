@@ -85,7 +85,7 @@ function driver() {
 
     echo
     echo "Compiling $LAB$exec ..."
-    (make clean; make $LAB$exec)
+    (make --no-print-directory clean; make --no-print-directory $LAB$exec)
     status=$?
     if [ ${status} -ne 0 ]; then
         GRADING[$exec"_compilation"]=0
