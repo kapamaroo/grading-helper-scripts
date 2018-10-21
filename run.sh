@@ -76,8 +76,8 @@ function __check_output {
         return
     fi
 
-    local prefix="        "
-    local fix="-->     "
+    local prefix="diff :  "
+    local fix="diff :  "
 
     if [ $EXACT_OUTPUT -eq 0 ]; then
         ((case_ignore = 0))
@@ -85,16 +85,19 @@ function __check_output {
         ((other = 0))
     fi
     local _res=""
+    local _orig=""
     echo -n -e "$prefix"
     for (( i=0; i<$size; i++)); do
         _o=${_output:$i:1}
         _g=${_golden:$i:1}
         if [ "$_o" == "$_g" ]; then
             echo -n "$_o"
+            _orig+="$_g"
             _res+=" "
         elif [ "$_o" == "-" ]; then
             # missing character, print golden
             print_missing "$_g"
+            _orig+="$_g"
             _res+="+"
         elif [ "$_g" == "-" ]; then
             # extra character
@@ -102,6 +105,7 @@ function __check_output {
             _res+="-"
         else
             print_mismatch "$_o"
+            _orig+="$_g"
             _res+="?"
         fi
         if [ $EXACT_OUTPUT -eq 0 ] && [ "$_g" != "$_o" ]; then
@@ -117,10 +121,12 @@ function __check_output {
             if [ $SHOW_FIXLINE -eq 1 ]; then
                 if [ -n "${_res// }" ]; then
                     echo -e "$fix$_res"
+                    echo -e "ORIG :  $_orig"
                     echo
                 fi
             fi
             _res=""
+            _orig=""
             echo -n -e "$prefix"
         fi
     done
@@ -129,6 +135,7 @@ function __check_output {
     if [ $SHOW_FIXLINE -eq 1 ]; then
         if [ -n "${_res// }" ]; then
             echo -e "$fix$_res"
+            echo "ORIG :  $_orig"
         fi
     fi
 
@@ -183,8 +190,6 @@ function check_output {
     fi
 
     RESULT=$_res
-
-    echo "    -$RESULT %"
 }
 
 # parse argumets to the porgram
