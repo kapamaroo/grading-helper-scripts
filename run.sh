@@ -79,7 +79,7 @@ function __check_output {
     local prefix="        "
     local fix="-->     "
 
-    if [ $STRICT_OUTPUT -eq 0 ]; then
+    if [ $EXACT_OUTPUT -eq 0 ]; then
         ((case_ignore = 0))
         ((whitespace = 0))
         ((other = 0))
@@ -104,7 +104,7 @@ function __check_output {
             print_mismatch "$_o"
             _res+="?"
         fi
-        if [ $STRICT_OUTPUT -eq 0 ] && [ "$_g" != "$_o" ]; then
+        if [ $EXACT_OUTPUT -eq 0 ] && [ "$_g" != "$_o" ]; then
             if [[ "$_g" =~ [[:space:]] ]]; then
                 ((whitespace++))
             elif [[ "$_g" =~ [[:alpha:]] ]] && [ "${_g,,}" = "${_o,,}" ]; then
@@ -132,7 +132,7 @@ function __check_output {
         fi
     fi
 
-    if [ $STRICT_OUTPUT -eq 0 ]; then
+    if [ $EXACT_OUTPUT -eq 0 ]; then
         MISMATCH["whitespace"]=$whitespace
         MISMATCH["case"]=$case_ignore
         MISMATCH["other"]=$other
@@ -167,19 +167,19 @@ function check_output {
     ((_res = ${MISMATCH["other"]}))
     __check_output "$output" "$expected_output"
 
-    if [ $STRICT_OUTPUT -eq 1 ]; then
+    if [ $EXACT_OUTPUT -eq 1 ]; then
         RESULT=$_res
         return
     fi
 
     if [ ${MISMATCH["other"]} -gt 0 ]; then
-        ((_res = ${PENALTY["other"]}))
+        ((_res = ${MISMATCH_PENALTY["other"]}))
     elif [ ${MISMATCH["whitespace"]} -gt 0 ] && [ ${MISMATCH["case"]} -gt 0 ]; then
-        ((_res = ${PENALTY["whitespace"]} + ${PENALTY["case"]}))
+        ((_res = ${MISMATCH_PENALTY["whitespace"]} + ${MISMATCH_PENALTY["case"]}))
     elif [ ${MISMATCH["whitespace"]} -gt 0 ]; then
-        ((_res = ${PENALTY["whitespace"]}))
+        ((_res = ${MISMATCH_PENALTY["whitespace"]}))
     elif [ ${MISMATCH["case"]} -gt 0 ]; then
-        ((_res = ${PENALTY["case"]}))
+        ((_res = ${MISMATCH_PENALTY["case"]}))
     fi
 
     RESULT=$_res
