@@ -6,19 +6,10 @@
 # http://linuxcommand.org/lc3_adv_tput.php
 # https://en.wikipedia.org/wiki/Needleman%E2%80%93Wunsch_algorithm
 
+source lab.conf
+source colors.conf
+
 OLDDIR=`pwd`
-
-function print_error {
-    echo -n "$(tput setaf 1)$@$(tput sgr0)"
-}
-
-function print_warning {
-    echo -n "$(tput setaf 5)$@$(tput sgr0)"
-}
-
-function print_info {
-    echo -n "$(tput setaf 6)$@$(tput sgr0)"
-}
 
 function compile() {
     local EXEC=`basename $TEMPLATE .c`
