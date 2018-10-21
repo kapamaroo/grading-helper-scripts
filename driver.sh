@@ -85,10 +85,17 @@ function driver() {
 
     echo
     echo "Compiling $LAB$exec ..."
-    (make --no-print-directory clean; make --no-print-directory $LAB$exec)
-    status=$?
-    if [ ${status} -ne 0 ]; then
+    (
+        make --no-print-directory clean;
+        make --no-print-directory $LAB$exec
+    )
+
+    if [ -f errors ]; then
         GRADING[$exec"_compilation"]=0
+        rm errors
+    elif [ -f warnings ]; then
+        GRADING[$exec"_compilation"]=-15
+        rm warnings
     fi
 
     # echo "Running ./$LAB$exec"
