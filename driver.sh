@@ -119,16 +119,9 @@ function driver() {
         else
             ./run.sh $LAB$exec --match-stdout $TESTS_DIR/$exec"_out_"$i
         fi
-        ((result = 100 - $?))
+        result=$?
 
-        local max=${GRADING[$exec"_out_"$i]}
-        GRADING[$exec"_out_"$i]=`bc <<< "scale=2; a=${result}/100 * ${max}; scale=0; a/1"`
-        if [ ${GRADING[$exec"_out_"$i]} -ne $max ]; then
-            if [ $result -ne 0 ]; then
-                echo -n "-$((100 - result)) % "
-            fi
-            echo "points: ${GRADING[$exec"_out_"$i]} of $max"
-        fi
+        GRADING[$exec"_out_"$i]=$result
     done
 }
 
@@ -137,5 +130,8 @@ ERROR=0
 for exec in $EXEC_LIST; do
     driver $exec
 done
+
+print_separator
+echo
 
 exit

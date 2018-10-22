@@ -46,8 +46,6 @@ function __check_output {
     output="$1"
     expected_output="$2"
 
-    RESULT=100
-
     # echo "---------------    output    ---------------"
 
     _result=$($ALIGN_TOOL "~$1~" "~$2~")
@@ -76,8 +74,9 @@ function __check_output {
         return
     fi
 
-    local prefix="diff :  "
-    local fix="diff :  "
+    local prefix="     fix :  "
+    local fix="     fix :  "
+    local orig="    ORIG :  "
 
     if [ $EXACT_OUTPUT -eq 0 ]; then
         ((case_ignore = 0))
@@ -86,25 +85,28 @@ function __check_output {
     fi
     local _res=""
     local _orig=""
-    echo -n -e "$prefix"
+    local _diff="$prefix"
+
+    OUTPUT=""
+
     for (( i=0; i<$size; i++)); do
         _o=${_output:$i:1}
         _g=${_golden:$i:1}
         if [ "$_o" == "$_g" ]; then
-            echo -n "$_o"
+            _diff+=$(echo -n "$_o")
             _orig+="$_g"
             _res+=" "
         elif [ "$_o" == "-" ]; then
             # missing character, print golden
-            print_missing "$_g"
+            _diff+=$(print_missing "$_g")
             _orig+="$_g"
             _res+="+"
         elif [ "$_g" == "-" ]; then
             # extra character
-            print_extra "$_o"
+            _diff+=$(print_extra "$_o")
             _res+="-"
         else
-            print_mismatch "$_o"
+            _diff+=$(print_mismatch "$_o")
             _orig+="$_g"
             _res+="?"
         fi
@@ -120,22 +122,22 @@ function __check_output {
         if [ "$_g" = $'\n' ]; then
             if [ $SHOW_FIXLINE -eq 1 ]; then
                 if [ -n "${_res// }" ]; then
-                    echo -e "$fix$_res"
-                    echo -e "ORIG :  $_orig"
-                    echo
+                    OUTPUT+="$orig$_orig\n"
+                    OUTPUT+="$_diff\n"
+                    OUTPUT+="$fix$_res\n"
                 fi
             fi
             _res=""
             _orig=""
-            echo -n -e "$prefix"
+            _diff="$prefix"
         fi
     done
-    echo
 
     if [ $SHOW_FIXLINE -eq 1 ]; then
         if [ -n "${_res// }" ]; then
-            echo -e "$fix$_res"
-            echo "ORIG :  $_orig"
+            OUTPUT+="$orig$_orig\n"
+            OUTPUT+="$_diff\n"
+            OUTPUT+="$fix$_res\n"
         fi
     fi
 
@@ -165,31 +167,54 @@ function check_output {
     local output="$1"
     local expected_output="$2"
 
+    SCALED_RESULT=100
+
     if [ "$output" == "$expected_output" ]; then
-        echo "    Correct output"
-        RESULT=0
         return
     fi
 
-    ((_res = ${MISMATCH["other"]}))
+    ((SCALED_RESULT = 100 - ${MISMATCH_PENALTY["other"]}))
     __check_output "$output" "$expected_output"
 
     if [ $EXACT_OUTPUT -eq 1 ]; then
-        RESULT=$_res
         return
     fi
 
     if [ ${MISMATCH["other"]} -gt 0 ]; then
-        ((_res = ${MISMATCH_PENALTY["other"]}))
+        SCALED_RESULT=${MISMATCH_PENALTY["other"]}
     elif [ ${MISMATCH["whitespace"]} -gt 0 ] && [ ${MISMATCH["case"]} -gt 0 ]; then
-        ((_res = ${MISMATCH_PENALTY["whitespace"]} + ${MISMATCH_PENALTY["case"]}))
+        ((SCALED_RESULT = ${MISMATCH_PENALTY["whitespace"]} + ${MISMATCH_PENALTY["case"]}))
     elif [ ${MISMATCH["whitespace"]} -gt 0 ]; then
-        ((_res = ${MISMATCH_PENALTY["whitespace"]}))
+        SCALED_RESULT=${MISMATCH_PENALTY["whitespace"]}
     elif [ ${MISMATCH["case"]} -gt 0 ]; then
-        ((_res = ${MISMATCH_PENALTY["case"]}))
+        SCALED_RESULT=${MISMATCH_PENALTY["case"]}
     fi
 
-    RESULT=$_res
+    ((SCALED_RESULT = 100 - $SCALED_RESULT))
+}
+
+function print_output() {
+    IFS=',' read -a testcase <<< "${GRADING["$(basename $EXPECTED)"]}"
+    local max=${testcase[0]}
+
+    if [ -n "${testcase[1]}" ]; then
+        echo -n "${testcase[1]} --> "
+    else
+        echo -n "$(basename $EXPECTED) --> "
+    fi
+
+    RESULT=`bc <<< "scale=2; a=${SCALED_RESULT}/100 * ${max}; scale=0; a/1"`
+
+    if [ $RESULT -eq $max ]; then
+        echo -n "Correct output"
+    else
+        echo -n "$RESULT/$max "
+        if [ $RESULT -ne 0 ]; then
+            echo -n "-$((100 - $SCALED_RESULT)) %"
+        fi
+    fi
+    echo
+    echo -n -e "$OUTPUT"
 }
 
 # parse argumets to the porgram
@@ -264,14 +289,6 @@ function run() {
     # echo
     print_separator
     echo
-    if [ -n "$STDIN" ]; then
-        print_info "    $ ./$EXEC < $(basename $STDIN) > $(basename $EXPECTED)"
-    else
-        print_info "    $ ./$EXEC > $(basename $EXPECTED)"
-    fi
-    echo
-    print_separator
-    echo
     # echo "--------------------------------------------"
     if [ ! -f $EXEC ]; then
         print_error "missing"
@@ -292,19 +309,18 @@ function run() {
     local timeout=$?
     if [ $timeout -eq 0 ]; then
         check_output "$output" "$expected_output"
+        print_output
     else
         print_error "Execution takes too long (timemout = $TIMEOUT_LIMIT seconds)"
         echo
+        RESULT=0
     fi
-    echo
 }
 
 # print_legend
 
 # echo "Working directory: $SRCDIR"
 # echo
-
-RESULT=0
 
 cd $SRCDIR
 run "$SRCDIR"
