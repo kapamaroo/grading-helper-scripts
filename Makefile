@@ -2,10 +2,10 @@ autograde:
 	@mkdir -p autolab/autograde
 	@cp autograde-Makefile lab2submit.tar.gz autolab
 
-	@cp -r unpack.sh cc.sh run.sh driver.sh driver-html.sh colors.conf lab.conf bin tests ansi2html.sh autolab/autograde
+	@cp -r unpack.sh cc.sh run.py driver.sh driver-html.sh colors.conf lab.conf bin tests ansi2html.sh autolab/autograde
 	@cp lab-Makefile autolab/autograde/Makefile
 
-	@tar -C autolab -cf autolab/autograde.tar autograde --exclude=\.directory
+	@tar -C autolab --exclude=\.directory -cf autolab/autograde.tar autograde
 	@rm -rf autolab/autograde
 
 test:

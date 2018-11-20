@@ -115,9 +115,9 @@ function driver() {
         fi
 
         if [ -f $TESTS_DIR/$exec"_in_"$i ]; then
-            ./run.sh $LAB$exec --pass-stdin $TESTS_DIR/$exec"_in_"$i --match-stdout $TESTS_DIR/$exec"_out_"$i
+            ./run.py $LAB$exec --pass-stdin $TESTS_DIR/$exec"_in_"$i --match-stdout $TESTS_DIR/$exec"_out_"$i
         else
-            ./run.sh $LAB$exec --match-stdout $TESTS_DIR/$exec"_out_"$i
+            ./run.py $LAB$exec --match-stdout $TESTS_DIR/$exec"_out_"$i
         fi
         result=$?
 
