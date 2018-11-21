@@ -31,7 +31,6 @@ GRADING = {
     "b_out_2": (25, None)
 }
 
-SUBMISSION_PENALTY = 50
 WARNINGS_PENALTY = 15
 
 SHOW_COLOR = 0
