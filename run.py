@@ -1,8 +1,9 @@
-#!/usr/bin/python3.6
+#!/usr/bin/python3
 
 import subprocess
 import sys
 import os
+from alignment import needle
 
 # CONF
 MISMATCH_PENALTY = {
