@@ -73,10 +73,13 @@ def check_output(output, expected_output):
         o, r = check_output_slice(i + 1, Lo[i], Go[i])
 
         OUTPUT += o
-        R = r
+        R += r
 
-        if R < 100:
+        if r == 0:
+            R = 0
             break
+
+    R /= len(Lo)
 
     return OUTPUT, R
 
