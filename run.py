@@ -36,9 +36,6 @@ GRADING = {
 SHOW_FIXLINE=1
 TIMEOUT_LIMIT = 2
 
-ALIGN_TOOLS_PATH=os.path.dirname(sys.argv[0])
-ALIGN_TOOL="%s/bin/needleman_wunsch" % ALIGN_TOOLS_PATH
-
 def _unidiff_output(expected, actual):
     """
     Helper function. Returns a string containing the unified diff of two multiline strings.
@@ -137,13 +134,7 @@ def check_output_slice(part_num, output, expected_output):
 def __check_output(part_num, output, expected_output):
     OUTPUT = ""
 
-    stdout, stderr, rc = exec_task_block(
-        "%s \"~%s~\" \"~%s~\"" % (ALIGN_TOOL, output, expected_output))
-
-    groups = [ x for x in stdout.split("~")]
-
-    _output = groups[1]
-    _golden = groups[3]
+    _output, _golden = needle(output, expected_output)
 
     size = len(_output)
     size2 = len(_golden)
