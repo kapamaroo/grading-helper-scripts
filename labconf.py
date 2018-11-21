@@ -13,6 +13,8 @@ MISMATCH_PENALTY = {
     "other": 100
 }
 
+OUTPUT_DELIMITER = "\n#\n"
+
 EXACT_OUTPUT = 0
 TIMEOUT_LIMIT = 2
 

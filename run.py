@@ -62,8 +62,7 @@ if (os.path.isfile(EXEC) and not os.access(EXEC, os.X_OK)):
 
 
 def check_output(output, expected_output):
-    delimiter = ", "
-    # delimiter = "\n#\n"
+    delimiter = OUTPUT_DELIMITER
     Lo = output.split(delimiter)
     Go = expected_output.split(delimiter)
 
