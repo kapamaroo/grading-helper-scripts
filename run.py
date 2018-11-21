@@ -92,7 +92,7 @@ def check_output(output, expected_output):
     scaled_result = 100
 
     if output == expected_output:
-        return "", scaled_result
+        return "Correct output\n", scaled_result
 
     scaled_result = 100 - MISMATCH_PENALTY["other"]
     OUTPUT = __check_output(output, expected_output)
@@ -114,7 +114,7 @@ def check_output(output, expected_output):
 
 
 def __check_output(output, expected_output):
-    OUTPUT = ""
+    OUTPUT = "\n"
 
     stdout, stderr, rc = exec_task_block(
         "%s \"~%s~\" \"~%s~\"" % (ALIGN_TOOL, output, expected_output))
@@ -213,13 +213,11 @@ def print_output(scaled_result, output):
 
     result = int(scaled_result/100 * maximum)
 
-    if result == maximum:
-        sys.stdout.write("Correct output")
-    else:
+    if result != maximum:
         sys.stdout.write("%d/%d " % (result, maximum))
         if result != 0:
             sys.stdout.write("-%d %%" % (100-scaled_result))
-    sys.stdout.write("\n"+output)
+    sys.stdout.write(output)
     return result
 
 
