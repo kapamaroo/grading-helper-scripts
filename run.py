@@ -3,7 +3,6 @@
 import subprocess
 import sys
 import os
-import re
 
 # CONF
 MISMATCH_PENALTY = {
@@ -89,13 +88,34 @@ if (os.path.isfile(EXEC) and not os.access(EXEC, os.X_OK)):
 
 
 def check_output(output, expected_output):
+    delimiter = ", "
+    # delimiter = "\n#\n"
+    Lo = output.split(delimiter)
+    Go = expected_output.split(delimiter)
+
+    OUTPUT = "\n"
+    R = 0
+
+    for i in range(0,len(Lo)):
+        o, r = check_output_slice(i + 1, Lo[i], Go[i])
+
+        OUTPUT += o
+        R = r
+
+        if R < 100:
+            break
+
+    return OUTPUT, R
+
+
+def check_output_slice(part_num, output, expected_output):
     scaled_result = 100
 
     if output == expected_output:
-        return "Correct output\n", scaled_result
+        return "%d:  Correct output\n" %(part_num), scaled_result
 
     scaled_result = 100 - MISMATCH_PENALTY["other"]
-    OUTPUT = __check_output(output, expected_output)
+    OUTPUT = __check_output(part_num, output, expected_output)
     if EXACT_OUTPUT == 1:
         return OUTPUT, scaled_result
 
@@ -113,8 +133,8 @@ def check_output(output, expected_output):
     return OUTPUT, scaled_result
 
 
-def __check_output(output, expected_output):
-    OUTPUT = "\n"
+def __check_output(part_num, output, expected_output):
+    OUTPUT = ""
 
     stdout, stderr, rc = exec_task_block(
         "%s \"~%s~\" \"~%s~\"" % (ALIGN_TOOL, output, expected_output))
@@ -131,9 +151,9 @@ def __check_output(output, expected_output):
         print("bad sizes %d %d" % (size, size2))
         exit()
 
-    prefix="     fix :  "
-    fix="     fix :  "
-    orig="    ORIG :  "
+    prefix = "%d:   fix :  " %(part_num)
+    fix    = "%d:   fix :  " %(part_num)
+    orig   = "%d:  ORIG :  " %(part_num)
 
     if EXACT_OUTPUT == 0:
         case_ignore=0
@@ -177,9 +197,9 @@ def __check_output(output, expected_output):
         if _g == "\n":
             if SHOW_FIXLINE == 1:
                 if len(_res.replace(" ","")) != 0:
-                    OUTPUT+=orig+_orig
-                    OUTPUT+=_diff
-                    OUTPUT+=fix+_res+"\n"
+                    OUTPUT+=orig+_orig.rstrip(os.linesep)+"\n"
+                    OUTPUT+=_diff.rstrip(os.linesep)+"\n"
+                    OUTPUT+=fix+_res.rstrip(os.linesep)+"\n"
 
             _res=""
             _orig=""
@@ -187,9 +207,9 @@ def __check_output(output, expected_output):
 
     if SHOW_FIXLINE == 1:
         if len(_res.replace(" ","")) != 0:
-            OUTPUT+=orig+_orig
-            OUTPUT+=_diff
-            OUTPUT+=fix+_res+"\n"
+            OUTPUT+=orig+_orig.rstrip(os.linesep)+"\n"
+            OUTPUT+=_diff.rstrip(os.linesep)+"\n"
+            OUTPUT+=fix+_res.rstrip(os.linesep)+"\n"
 
         _res=""
         _orig=""
