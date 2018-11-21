@@ -76,7 +76,6 @@ def check_output(output, expected_output):
         R += r
 
         if r == 0:
-            R = 0
             break
 
     R /= len(Lo)
