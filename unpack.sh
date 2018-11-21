@@ -39,7 +39,7 @@ function unpack {
         tar xzf "$tgz" -C "$expected_dir_name"
         subdir="$expected_dir_name"
 
-        RESULT=50
+        RESULT=8
         echo "    -$RESULT %"
     else
         tar xzf "$tgz"
