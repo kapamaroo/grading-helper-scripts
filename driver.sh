@@ -71,10 +71,11 @@ function check_file() {
 
 echo "Getting files..."
 ./unpack.sh $COMPRESSED ".tar.gz"
-if [ $? -ne 0 ]; then
+result=$?
+GRADING["submission"]=-$result
+if [ $result -eq 100 ]; then
     print_error "Cannot extract $COMPRESSED"
     echo
-    GRADING["submission"]=0
     exit
 fi
 
@@ -91,10 +92,10 @@ function driver() {
     )
 
     if [ -f errors ]; then
-        GRADING[$exec"_compilation"]=0
+        GRADING[$exec"_compilation"]=-100
         rm errors
     elif [ -f warnings ]; then
-        GRADING[$exec"_compilation"]=-15
+        GRADING[$exec"_compilation"]=-$WARNINGS_PENALTY
         rm warnings
     fi
 

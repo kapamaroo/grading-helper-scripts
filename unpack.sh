@@ -3,6 +3,8 @@
 source lab.conf
 source colors.conf
 
+RESULT=0
+
 function unpack {
     local tgz="$1"
     local ext="$2"
@@ -36,6 +38,9 @@ function unpack {
         mkdir -p "$expected_dir_name"
         tar xzf "$tgz" -C "$expected_dir_name"
         subdir="$expected_dir_name"
+
+        RESULT=$SUBMISSION_PENALTY
+        echo "    -$RESULT %"
     else
         tar xzf "$tgz"
         if [ "$subdir" != "$expected_dir_name" ]; then
@@ -80,3 +85,5 @@ if [ $result -ne 0 ]; then
 fi
 
 unpack "$1" "$2"
+
+exit $RESULT
