@@ -44,6 +44,8 @@ function unpack {
             subdir="$expected_dir_name"
         fi
     fi
+    echo
+
     src_files=`find "$subdir" -name "*.c"`
     if [ -z "$src_files" ]; then
         print_error "  -  no source code files '*.c'"
@@ -64,6 +66,8 @@ function unpack {
         echo "$f"
         mv "$subdir/$f" "$f"
     done
+
+    rm -r "$subdir"
 }
 
 if [ ! -f "$1" ]; then
