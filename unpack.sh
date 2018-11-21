@@ -39,7 +39,7 @@ function unpack {
         tar xzf "$tgz" -C "$expected_dir_name"
         subdir="$expected_dir_name"
 
-        RESULT=$SUBMISSION_PENALTY
+        RESULT=50
         echo "    -$RESULT %"
     else
         tar xzf "$tgz"
@@ -75,15 +75,21 @@ function unpack {
     rm -r "$subdir"
 }
 
-if [ ! -f "$1" ]; then
+tgz="$1"
+ext="$2"
+shift
+shift
+EXTRA_FILES="$@"
+
+if [ ! -f "$tgz" ]; then
     exit 100
 fi
-tar tf "$1" &> /dev/null
+tar tf "$tgz" &> /dev/null
 result=$?
 if [ $result -ne 0 ]; then
     exit 100
 fi
 
-unpack "$1" "$2"
+unpack "$tgz" "$ext"
 
 exit $RESULT

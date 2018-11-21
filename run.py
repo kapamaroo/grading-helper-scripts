@@ -4,37 +4,13 @@ import subprocess
 import sys
 import os
 from alignment import needle
+from labconf import *
 
-# CONF
-MISMATCH_PENALTY = {
-    "whitespace": 20,
-    "case": 40,
-    "other": 100
+mismatch = {
+    "whitespace": 0,
+    "case": 0,
+    "other": 0
 }
-
-mismatch={
-    "whitespace":0,
-    "case":0,
-    "other":0
-}
-
-EXACT_OUTPUT = 0
-
-GRADING = {
-    "submission": (0, None),
-
-    "a_compilation": (0, None),
-    "a_out_1": (25, "a_output_1"),
-    "a_out_2": (24, None),
-    "a_out_3": (26, None),
-
-    "b_compilation": (0, None),
-    "b_out_1": (25, "b_output"),
-    "b_out_2": (25, None)
-}
-
-SHOW_FIXLINE=1
-TIMEOUT_LIMIT = 2
 
 def _unidiff_output(expected, actual):
     """

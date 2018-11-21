@@ -2,7 +2,7 @@
 
 source lab.conf
 
-out="$(./driver.sh)"
+out="$(./driver.py)"
 
 if [ $SHOW_COLOR -eq 0 ]; then
     echo "$out"
