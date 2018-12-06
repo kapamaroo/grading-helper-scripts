@@ -66,10 +66,13 @@ def check_output(output, expected_output):
     Lo = output.split(delimiter)
     Go = expected_output.split(delimiter)
 
+    if len(Lo) < len(Go):
+        Lo += [ "" ] * (len(Go) - len(Lo))
+
     OUTPUT = "\n"
     R = 0
 
-    for i in range(0,len(Lo)):
+    for i in range(0,len(Go)):
         o, r = check_output_slice(i + 1, Lo[i], Go[i])
 
         OUTPUT += o
@@ -78,7 +81,10 @@ def check_output(output, expected_output):
         if r == 0:
             break
 
-    R /= len(Lo)
+    R /= len(Go)
+
+    if len(Lo) > len(Go):
+        R *= len(Go) / len(Lo)
 
     return OUTPUT, R
 
