@@ -31,6 +31,8 @@ GRADING = {
     "b_out_2": (25, None)
 }
 
+MAX_SIZE_FACTOR_PER_SLICE = 2
+
 WARNINGS_PENALTY = 15
 
 SHOW_COLOR = 0

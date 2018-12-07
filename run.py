@@ -92,6 +92,9 @@ def check_output(output, expected_output):
 def check_output_slice(part_num, output, expected_output):
     scaled_result = 100
 
+    if len(output) > MAX_SIZE_FACTOR_PER_SLICE * len(expected_output):
+        return "Output exceeds max size limit - Retry this step\n", 0
+
     if output == expected_output:
         return "%d:  Correct output\n" %(part_num), scaled_result
 
