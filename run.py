@@ -263,8 +263,6 @@ def print_legend():
 
 
 def run():
-    result = 0
-
     print_separator()
     if STDIN != "":
         output, _, timeout = exec_task_block(
@@ -273,12 +271,26 @@ def run():
         output, _, timeout = exec_task_block(
             "%s ./%s %s" % (TIMEOUT, EXEC, EXEC_PARAMS))
 
-    if (timeout == 0):
+    result = 0
+    msg = ""
+
+    if TIMEOUT:
+        if timeout == 124:
+            msg = "Execution took too long (timeout = %d seconds)" % TIMEOUT_LIMIT
+        elif timeout == 125:
+            msg = "timeout command failure"
+        elif timeout == 126:
+            msg = "command %s found but cannot be executed" %(EXEC)
+        elif timeout == 127:
+            msg = "command %s cannot be found" %(EXEC)
+        elif timeout == 137:
+            msg = "%s is sent the SIGKILL signal" %(EXEC)
+
+    if msg:
+        print(msg)
+    else:
         OUTPUT, scaled_result = check_output(output, expected_output)
         result = print_output(scaled_result, OUTPUT)
-
-    else:
-        print("Execution took too long (timeout = %d seconds)" % TIMEOUT_LIMIT)
 
     return result
 
