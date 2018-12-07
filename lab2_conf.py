@@ -1,4 +1,7 @@
-LAB = "lab2"
+LAB_PREFIX = "lab"
+LAB_NUM = 2
+LAB = LAB_PREFIX + str(LAB_NUM)
+
 EXEC_LIST = [ "a", "b" ]
 
 EXTRA_FILES = [ "README" ]

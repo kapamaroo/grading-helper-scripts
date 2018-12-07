@@ -1,12 +1,16 @@
 # Student makefile for Practice Lab
 
+LAB_PREFIX = lab
+LAB_NUM = 0
+LAB = $(LAB_PREFIX)$(LAB_NUM)
+
 CC=./cc.sh
 
-lab2a:
-	@$(CC) -Wall lab2a.c -o lab2a
+$(LAB)a:
+	@$(CC) -Wall $(LAB)a.c -o $(LAB)a -lm
 
-lab2b:
-	@$(CC) -Wall lab2b.c -o lab2b
+$(LAB)b:
+	@$(CC) -Wall $(LAB)b.c -o $(LAB)b -lm
 
 clean:
-	@rm -rf *~ lab2a lab2b
+	@rm -rf *~ $(LAB)a $(LAB)b

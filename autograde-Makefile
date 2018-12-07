@@ -1,6 +1,10 @@
+LAB_PREFIX = lab
+LAB_NUM = 0
+LAB = $(LAB_PREFIX)$(LAB_NUM)
+
 all:
 	@tar xvf autograde.tar > /dev/null
-	@cp lab2submit.tar.gz autograde
+	@cp $(LAB)submit.tar.gz autograde
 	@(cd autograde; ./driver.py)
 
 clean:
