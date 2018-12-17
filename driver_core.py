@@ -78,9 +78,9 @@ def get_files():
 
 
 def __driver_core(executable):
-    print("\nCompiling %s%s ..." %(LAB, executable))
+    print("\nCompiling %s%s ..." %(NAME, executable))
 
-    exec_task_block("make --no-print-directory %s%s" %(LAB, executable))
+    exec_task_block("make --no-print-directory %s%s" %(NAME, executable))
 
     if os.path.isfile("errors"):
         GRADING[executable + "_compilation"] = -100
@@ -98,18 +98,18 @@ def __driver_core(executable):
             break
         if not testcase_out in GRADING:
             continue
-        if not os.path.isfile(LAB + executable):
+        if not os.path.isfile(NAME + executable):
             GRADING[testcase_out] = 0
             continue
 
         if os.path.isfile(TESTS_DIR + "/" + testcase_in):
             o, e, result = exec_task_block("./run.py %s%s --pass-stdin %s --match-stdout %s"
-                                           %(LAB, executable,
+                                           %(NAME, executable,
                                              TESTS_DIR + "/" + testcase_in,
                                              TESTS_DIR + "/" + testcase_out))
         else:
             o, e, result = exec_task_block("./run.py %s%s --match-stdout %s"
-                                           %(LAB, executable,
+                                           %(NAME, executable,
                                              TESTS_DIR + "/" + testcase_out))
 
         print(o)

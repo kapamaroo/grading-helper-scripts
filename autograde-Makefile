@@ -1,10 +1,10 @@
 PREFIX = none
 NUM = 0
-LAB = $(PREFIX)$(NUM)
+NAME = $(PREFIX)$(NUM)
 
 all:
 	@tar xvf autograde.tar > /dev/null
-	@cp $(LAB)submit.tar.gz autograde
+	@cp $(NAME)submit.tar.gz autograde
 	@(cd autograde; ./driver.py)
 
 clean:

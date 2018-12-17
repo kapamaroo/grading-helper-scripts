@@ -2,15 +2,15 @@
 
 PREFIX = none
 NUM = 0
-LAB = $(PREFIX)$(NUM)
+NAME = $(PREFIX)$(NUM)
 
 CC=./cc.sh
 
-$(LAB)a:
-	@$(CC) -Wall $(LAB)a.c -o $(LAB)a -lm
+$(NAME)a:
+	@$(CC) -Wall $(NAME)a.c -o $(NAME)a -lm
 
-$(LAB)b:
-	@$(CC) -Wall $(LAB)b.c -o $(LAB)b -lm
+$(NAME)b:
+	@$(CC) -Wall $(NAME)b.c -o $(NAME)b -lm
 
 clean:
-	@rm -rf *~ $(LAB)a $(LAB)b
+	@rm -rf *~ $(NAME)a $(NAME)b

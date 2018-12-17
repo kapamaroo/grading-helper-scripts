@@ -4,7 +4,7 @@ To create the needed files for say lab2:
 
 1. Create lab2_conf.py with the configuration of the tests
 2. Create tests_lab2 directory with the input / output of the testcases.
-3. Run make LAB_NUM=2 clean autograde
+3. Run make LAB=2 clean autograde
 
    The generated files can be found in the autolab directory.
 
@@ -15,7 +15,7 @@ To create the needed files for say lab2:
 To test locally the files:
 
 4. Create lab2submit.tar.gz
-5. Run make LAB_NUM=2 clean test
+5. Run make LAB=2 clean test
 
 The generated files can be found in the autolab/autograde directory.
 
@@ -23,16 +23,16 @@ The generated files can be found in the autolab/autograde directory.
 
 Before you prepare another set of files for a different lab:
 
-6. Run make LAB_NUM=2 clean
+6. Run make LAB=2 clean
 
 
 
-For homework submissions add HW_NUM=X to the make command where X is a positive number:
+For homework submissions add HW=X to the make command where X is a positive number:
 
 Example hw4:
 
 1. Create hw4_conf.py
 2. Create tests_hw4 directory
-3. Run make HW_NUM=4 clean autograde
+3. Run make HW=4 clean autograde
 4. Create hw4submit.tar.gz
-5. Run make HW_NUM=4 clean test
+5. Run make HW=4 clean test

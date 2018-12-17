@@ -1,12 +1,12 @@
-LAB_PREFIX = "lab"
-LAB_NUM = 2
-LAB = LAB_PREFIX + str(LAB_NUM)
+PREFIX = "lab"
+NUM = 2
+NAME = PREFIX + str(NUM)
 
 EXEC_LIST = [ "a", "b" ]
 
 EXTRA_FILES = [ "README" ]
 
-COMPRESSED = LAB + "submit.tar.gz"
+COMPRESSED = NAME + "submit.tar.gz"
 
 TESTS_DIR = "tests"
 
