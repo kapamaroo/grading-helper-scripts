@@ -1,6 +1,6 @@
-LAB_PREFIX = lab
-LAB_NUM = 0
-LAB = $(LAB_PREFIX)$(LAB_NUM)
+PREFIX = none
+NUM = 0
+LAB = $(PREFIX)$(NUM)
 
 all:
 	@tar xvf autograde.tar > /dev/null

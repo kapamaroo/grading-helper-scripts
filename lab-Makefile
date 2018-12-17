@@ -1,8 +1,8 @@
 # Student makefile for Practice Lab
 
-LAB_PREFIX = lab
-LAB_NUM = 0
-LAB = $(LAB_PREFIX)$(LAB_NUM)
+PREFIX = none
+NUM = 0
+LAB = $(PREFIX)$(NUM)
 
 CC=./cc.sh
 
