@@ -34,6 +34,9 @@ GRADING = {
     "b_out_2": (25, None)
 }
 
+# DIFF = "context_diff"
+DIFF = "needle"
+
 MAX_SIZE_FACTOR_PER_SLICE = 2
 
 WARNINGS_PENALTY = 15

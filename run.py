@@ -12,18 +12,30 @@ mismatch = {
     "other": 0
 }
 
-def _unidiff_output(expected, actual):
+def _unidiff_output(actual, expected):
     """
     Helper function. Returns a string containing the unified diff of two multiline strings.
     """
 
     import difflib
+
     expected = expected.splitlines(1)
     actual = actual.splitlines(1)
 
-    diff = difflib.unified_diff(expected, actual)
+    try:
+        if DIFF == "unified_diff":
+            diff = difflib.unified_diff(expected, actual)
+        elif DIFF == "ndiff":
+            diff = difflib.ndiff(expected, actual)
+        elif DIFF == "context_diff":
+            diff = difflib.context_diff(expected, actual)
+        else:
+            diff = difflib.context_diff(expected, actual)
+    except:
+        diff = difflib.context_diff(expected, actual)
 
-    return ''.join(diff)
+    out = ''.join(diff)
+    return out
 
 
 def print_separator():
@@ -120,7 +132,14 @@ def check_output_slice(part_num, output, expected_output):
 def __check_output(part_num, output, expected_output):
     OUTPUT = ""
 
-    _output, _golden = needle(output, expected_output)
+    try:
+        if DIFF == "needle":
+            _output, _golden = needle(output, expected_output)
+        else:
+            OUTPUT = _unidiff_output(output, expected_output)
+            return OUTPUT
+    except:
+            _output, _golden = needle(output, expected_output)
 
     size = len(_output)
     size2 = len(_golden)
