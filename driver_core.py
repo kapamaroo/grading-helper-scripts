@@ -80,7 +80,6 @@ def get_files():
 def __driver_core(executable):
     print("\nCompiling %s%s ..." %(LAB, executable))
 
-    exec_task_block("make --no-print-directory clean")
     exec_task_block("make --no-print-directory %s%s" %(LAB, executable))
 
     if os.path.isfile("errors"):
@@ -115,6 +114,7 @@ def __driver_core(executable):
 
         print(o)
         GRADING[testcase_out] = result
+    exec_task_block("make --no-print-directory clean")
 
 def driver_core():
     init_driver_core()
