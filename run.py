@@ -6,12 +6,6 @@ import os
 from alignment import needle
 from labconf import *
 
-mismatch = {
-    "whitespace": 0,
-    "case": 0,
-    "other": 0
-}
-
 def _unidiff_output(actual, expected):
     """
     Helper function. Returns a string containing the unified diff of two multiline strings.
@@ -111,33 +105,39 @@ def check_output_slice(part_num, output, expected_output):
         return "%d:  Correct output\n" %(part_num), scaled_result
 
     scaled_result = 100 - MISMATCH_PENALTY["other"]
-    OUTPUT = __check_output(part_num, output, expected_output)
+    OUTPUT, mismatch = __check_output(part_num, output, expected_output)
     if EXACT_OUTPUT == 1:
         return OUTPUT, scaled_result
 
     if mismatch["other"] > 0:
-        scaled_result = MISMATCH_PENALTY["other"]
+        scaled_result = 100 - MISMATCH_PENALTY["other"]
     elif mismatch["whitespace"] > 0 and mismatch["case"] > 0:
-        scaled_result = MISMATCH_PENALTY["whitespace"] + \
-            MISMATCH_PENALTY["case"]
+        scaled_result = 100 - (MISMATCH_PENALTY["whitespace"] + \
+            MISMATCH_PENALTY["case"])
     elif mismatch["whitespace"] > 0:
-        scaled_result = MISMATCH_PENALTY["whitespace"]
+        scaled_result = 100 - MISMATCH_PENALTY["whitespace"]
     elif mismatch["case"] > 0:
-        scaled_result = MISMATCH_PENALTY["case"]
+        scaled_result = 100 - MISMATCH_PENALTY["case"]
 
-    scaled_result = 100 - scaled_result
     return OUTPUT, scaled_result
 
 
 def __check_output(part_num, output, expected_output):
     OUTPUT = ""
 
+    mismatch = {
+        "whitespace": 0,
+        "case": 0,
+        "other": 0
+    }
+
     try:
         if DIFF == "needle":
             _output, _golden = needle(output, expected_output)
         else:
             OUTPUT = _unidiff_output(output, expected_output)
-            return OUTPUT
+            mismatch["other"] = 100
+            return OUTPUT, mismatch
     except:
             _output, _golden = needle(output, expected_output)
 
@@ -217,7 +217,7 @@ def __check_output(part_num, output, expected_output):
         mismatch["case"]=case_ignore
         mismatch["other"]=other
 
-    return OUTPUT
+    return OUTPUT, mismatch
 
 def print_output(scaled_result, output):
     basename = os.path.basename(EXPECTED)
