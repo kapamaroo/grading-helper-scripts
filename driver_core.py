@@ -2,6 +2,7 @@
 
 import subprocess
 import os
+import glob
 from labconf import *
 
 NAMES = {}
@@ -89,8 +90,8 @@ def __driver_core(executable):
         GRADING[executable + "_compilation"] = -WARNINGS_PENALTY
         os.remove("warnings")
 
-    o, e, ret = exec_task_block("ls %s/%s_out_* |wc -l" %(TESTS_DIR, executable))
-    num_tests = int(o)
+    testcases = glob.glob("%s/%s_out_*" %(TESTS_DIR, executable))
+    num_tests = len(testcases)
     for i in range(1, num_tests + 1):
         testcase_in = executable + "_in_" + str(i)
         testcase_out = executable + "_out_" + str(i)
