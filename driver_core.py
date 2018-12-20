@@ -94,8 +94,6 @@ def compile_(executable, flavor=""):
         EXTRA_CFLAGS = globals()["CFLAGS_%s" %(executable)]
         CFLAGS += EXTRA_CFLAGS
 
-    print("\nCompiling %s%s ..." %(NAME, executable))
-
     o, e, ret = exec_task_block("make --no-print-directory EXTRA_CFLAGS=\"%s\" EXTRA_LDFLAGS=\"%s\" FLAVOR=%s %s%s%s"
                                 %(CFLAGS, LDFLAGS, flavor, NAME, executable, flavor))
     print(o, e, end='')
@@ -115,43 +113,63 @@ def clean_(executable, flavor=""):
     o, e, ret = exec_task_block("make --no-print-directory clean FLAVOR=%s" %(flavor))
     print(o, e, end='')
 
-def run_(executable, flavor=""):
+def run_testcase(executable, testcase, flavor=""):
     if flavor and not flavor.startswith("_"):
         flavor = "_" + flavor
-    testcases = glob.glob("%s/%s_out%s_*" %(TESTS_DIR, executable, flavor))
+
+    testcase_in = testcase.replace("_out_", "_in_")
+    testcase_out = testcase.replace("_out_", "_out" + flavor + "_") if flavor else testcase
+    testcase = os.path.basename(testcase)
+    if not os.path.isfile(testcase_out):
+        if flavor:
+            return 100
+        raise
+    if not os.path.isfile(NAME + executable + flavor):
+        if flavor:
+            return 100
+        return 0
+
+    if os.path.isfile(testcase_in):
+        o, e, result = exec_task_block("./run.py %s%s%s --pass-stdin %s --match-stdout %s --testcase %s --grade %d"
+                                       %(NAME, executable, flavor,
+                                         testcase_in,
+                                         testcase_out,
+                                         os.path.basename(testcase_out), GRADING[testcase]))
+    else:
+        o, e, result = exec_task_block("./run.py %s%s%s --match-stdout %s --testcase %s --grade %d"
+                                       %(NAME, executable, flavor,
+                                         testcase_out,
+                                         os.path.basename(testcase_out), GRADING[testcase]))
+
+    print(o, e)
+
+    return result
+
+def run_(executable):
+    testcases = glob.glob("%s/%s_out_[0-9]*" %(TESTS_DIR, executable))
+    testcases.sort()
     num_tests = len(testcases)
-    for i in range(1, num_tests + 1):
-        testcase_in = executable + "_in_" + str(i)
-        testcase = executable + "_out_" + str(i)
-        testcase_out_flavor = executable + "_out" + flavor + "_" + str(i)
-        testcase_out = testcase_out_flavor if flavor else testcase
-        if not os.path.isfile(TESTS_DIR + "/" + testcase_out):
-            break
+    for _testcase in testcases:
+        testcase = os.path.basename(_testcase)
         if not testcase in GRADING:
             continue
-        if not os.path.isfile(NAME + executable + flavor):
-            GRADING[testcase] = 0
+        if not os.path.isfile(_testcase):
             continue
-
-        if os.path.isfile(TESTS_DIR + "/" + testcase_in):
-            o, e, result = exec_task_block("./run.py %s%s%s --pass-stdin %s --match-stdout %s --testcase %s --grade %d"
-                                           %(NAME, executable, flavor,
-                                             TESTS_DIR + "/" + testcase_in,
-                                             TESTS_DIR + "/" + testcase_out,
-                                             testcase, GRADING[testcase]))
-        else:
-            o, e, result = exec_task_block("./run.py %s%s%s --match-stdout %s --testcase %s --grade %d"
-                                           %(NAME, executable, flavor,
-                                             TESTS_DIR + "/" + testcase_out,
-                                             testcase, GRADING[testcase]))
-
-        print(o, e)
-        GRADING[testcase] = result
+        result = 0
+        if RUN_SIMPLE_TESTS:
+            result = run_testcase(executable, _testcase, flavor="simple")
+        if not RUN_SIMPLE_TESTS or result != 0:
+            result = run_testcase(executable, _testcase)
+            GRADING[testcase] = result
 
 def __driver_core(executable):
-    compile_(executable, flavor="")
-    run_(executable, flavor="")
-    clean_(executable, flavor="")
+    print("\nCompiling %s%s ..." %(NAME, executable))
+
+    compile_(executable)
+    compile_(executable, flavor="simple")
+    run_(executable)
+    clean_(executable)
+    clean_(executable, flavor="simple")
 
 def driver_core():
     init_driver_core()
@@ -165,5 +183,8 @@ def driver_core():
     print_separator()
 
     Exit(0)
+
+if not "RUN_SIMPLE_TESTS" in globals():
+    RUN_SIMPLE_TESTS = False
 
 driver_core()
