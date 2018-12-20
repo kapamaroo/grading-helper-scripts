@@ -70,8 +70,8 @@ def get_files():
     l = " ".join(EXTRA_FILES)
 
     print("Getting files...")
-    o, _, result = exec_task_block("./unpack.sh %s \".tar.gz\" %s" %(COMPRESSED, l))
-    print(o, end="")
+    o, e, result = exec_task_block("./unpack.sh %s \".tar.gz\" %s" %(COMPRESSED, l))
+    print(o, e, end="")
     GRADING["submission"] = -result
     if result == 100:
         print("Cannot extract %s" %(COMPRESSED)) # TODO print_error

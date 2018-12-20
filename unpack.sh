@@ -1,6 +1,5 @@
 #!/bin/bash
 
-source lab.conf
 source colors.conf
 
 RESULT=0
