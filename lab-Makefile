@@ -4,13 +4,29 @@ PREFIX = none
 NUM = 0
 NAME = $(PREFIX)$(NUM)
 
+CFLAGS += -Wall -g
+LDFLAGS +=
+
+EXTRA_CFLAGS ?=
+EXTRA_LDFLAGS ?=
+FLAVOR ?=
+
+HOOK_PRINTF_CFLAGS = -Dprintf=redirected_printf -D__MAX_OUTPUT=512 -include intercept_printf.c
+
+ifeq ($(FLAVOR),_simple)
+    CFLAGS += $(HOOK_PRINTF_CFLAGS)
+endif
+
+CFLAGS += $(EXTRA_CFLAGS)
+LDFLAGS += $(EXTRA_LDFLAGS)
+
 CC=./cc.sh
 
-$(NAME)a:
-	@$(CC) -Wall $(NAME)a.c -o $(NAME)a -lm
+$(NAME)a$(FLAVOR):
+	@$(CC) $(CFLAGS) $(NAME)a.c -o $(NAME)a$(FLAVOR) $(LDFLAGS)
 
-$(NAME)b:
-	@$(CC) -Wall $(NAME)b.c -o $(NAME)b -lm
+$(NAME)b$(FLAVOR):
+	@$(CC) $(CFLAGS) $(NAME)b.c -o $(NAME)b$(FLAVOR) $(LDFLAGS)
 
 clean:
-	@rm -rf *~ $(NAME)a $(NAME)b
+	@rm -rf *~ $(NAME)a$(FLAVOR) $(NAME)b$(FLAVOR)

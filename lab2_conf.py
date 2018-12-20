@@ -21,6 +21,9 @@ OUTPUT_DELIMITER = "\n#\n"
 EXACT_OUTPUT = 0
 TIMEOUT_LIMIT = 2
 
+CFLAGS_a = ""
+LDFLAGS_a = ""
+
 GRADING = {
     "submission": (0, None),
 

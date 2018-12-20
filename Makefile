@@ -24,6 +24,7 @@ autograde:
 
 	@cp -a unpack.sh colors.conf cc.sh ansi2html.sh autolab/autograde
 	@cp -a run.py alignment.py driver_core.py driver.py autolab/autograde
+	@cp -a intercept_printf.c autolab/autograde
 	@cp $(NAME)_conf.py autolab/autograde/labconf.py
 	@cp lab-Makefile autolab/autograde/Makefile
 	@sed -i "s/NUM = 0/NUM = $(NUM)/g" autolab/autograde/Makefile

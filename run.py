@@ -49,8 +49,12 @@ def exec_task_block(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, executa
     return stdout.decode('ascii'), stderr.decode('ascii'), p.returncode
 
 
-PARAM_STDIN = "--pass-stdin"
-PARAM_STDOUT = "--match-stdout"
+PARAMS = {}
+PARAMS["STDIN"] = "--pass-stdin"
+PARAMS["STDOUT"] = "--match-stdout"
+PARAMS["TESTCASE"] = "--testcase"
+PARAMS["GRADE"] = "--grade"
+
 SCRDIR = os.path.dirname(os.path.realpath(__file__))
 OLDDIR = SCRDIR
 
@@ -221,40 +225,40 @@ def __check_output(part_num, output, expected_output):
 
 def print_output(scaled_result, output):
     basename = os.path.basename(EXPECTED)
-    testcase = GRADING[basename]
-    maximum = testcase[0]
-    if testcase[1] is not None:
-        sys.stdout.write("%s --> " % testcase[1])
-    else:
-        sys.stdout.write("%s --> " % basename)
+    print("%s --> " %(TESTCASE), end='')
+    result = int(scaled_result/100 * GRADE)
 
-    result = int(scaled_result/100 * maximum)
-
-    if result != maximum:
-        sys.stdout.write("%d/%d " % (result, maximum))
+    if result != GRADE:
+        print("%d/%d " %(result, GRADE), end='')
         if result != 0:
-            sys.stdout.write("-%d %%" % (100-scaled_result))
-    sys.stdout.write(output)
+            print("-%d %%" %(100-scaled_result), end='')
+    print(output, end='')
     return result
 
 
 EXEC_PARAMS = ""
 STDIN = ""
 EXPECTED = ""
+TESTCASE = ""
+GRADE = 0
 
 while (len(sys.argv[argv_idx:]) > 0):
     arg = sys.argv[argv_idx]
     shift()
 
-    if arg == PARAM_STDIN or arg == PARAM_STDOUT:
-        if len(sys.argv[argv_idx:]) == 0 or sys.argv[argv_idx] == PARAM_STDOUT or sys.argv[argv_idx] == PARAM_STDIN:
+    if arg in PARAMS.values():
+        if len(sys.argv[argv_idx:]) == 0 or sys.argv[argv_idx] in PARAMS.values():
             print("%s provided without extra arguments")
             exit()
 
-        if arg == PARAM_STDIN:
+        if arg == PARAMS["STDIN"]:
             STDIN = OLDDIR + os.sep + sys.argv[argv_idx]
-        else:
+        elif arg == PARAMS["STDOUT"]:
             EXPECTED = OLDDIR + os.sep + sys.argv[argv_idx]
+        elif arg == PARAMS["TESTCASE"]:
+            TESTCASE = sys.argv[argv_idx]
+        elif arg == PARAMS["GRADE"]:
+            GRADE = int(sys.argv[argv_idx])
         shift()
 
     elif STDIN == "" and EXPECTED == "":
@@ -274,6 +278,14 @@ if EXPECTED != "":
         exit(100)
 
     expected_output = open(EXPECTED, "r").read()
+
+if TESTCASE == "":
+    print("Missing testcase name")
+    exit(100)
+
+if GRADE <= 0 or GRADE > 100:
+    print("grade out of bounds")
+    exit(100)
 
 TIMEOUT = ""
 if TIMEOUT_LIMIT > 0:
