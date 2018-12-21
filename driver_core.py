@@ -121,6 +121,7 @@ def run_testcase(executable, testcase, flavor=""):
         flavor = "_" + flavor
 
     testcase_in = testcase.replace("_out_", "_in_")
+    testcase_in_args = testcase.replace("_out_", "_in_args_")
     testcase_out = testcase.replace("_out_", "_out" + flavor + "_") if flavor else testcase
     testcase = os.path.basename(testcase)
     if not os.path.isfile(testcase_out):
@@ -133,6 +134,9 @@ def run_testcase(executable, testcase, flavor=""):
         return 0
 
     args = ""
+    if os.path.isfile(testcase_in_args):
+        with open(testcase_in_args) as f:
+            args = f.readline().rstrip('\n')
 
     if os.path.isfile(testcase_in):
         o, e, result = exec_task_block("./run.py %s%s%s %s --pass-stdin %s --match-stdout %s --testcase %s --grade %d"
