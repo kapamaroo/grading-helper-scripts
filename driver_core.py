@@ -71,7 +71,8 @@ def get_files():
 
     print("Getting files...")
     o, e, result = exec_task_block("./unpack.sh %s \".tar.gz\" %s" %(COMPRESSED, l))
-    print(o, e, end="")
+    if o or e:
+        print(o, e, end='')
     GRADING["submission"] = -result
     if result == 100:
         print("Cannot extract %s" %(COMPRESSED)) # TODO print_error
@@ -96,7 +97,8 @@ def compile_(executable, flavor=""):
 
     o, e, ret = exec_task_block("make --no-print-directory EXTRA_CFLAGS=\"%s\" EXTRA_LDFLAGS=\"%s\" FLAVOR=%s %s%s%s"
                                 %(CFLAGS, LDFLAGS, flavor, NAME, executable, flavor))
-    print(o, e, end='')
+    if o or e:
+        print(o, e, end='')
 
     if os.path.isfile("errors"):
         if grade:
@@ -111,7 +113,8 @@ def clean_(executable, flavor=""):
     if flavor and not flavor.startswith("_"):
         flavor = "_" + flavor
     o, e, ret = exec_task_block("make --no-print-directory clean FLAVOR=%s" %(flavor))
-    print(o, e, end='')
+    if o or e:
+        print(o, e, end='')
 
 def run_testcase(executable, testcase, flavor=""):
     if flavor and not flavor.startswith("_"):
@@ -141,7 +144,8 @@ def run_testcase(executable, testcase, flavor=""):
                                          testcase_out,
                                          os.path.basename(testcase_out), GRADING[testcase]))
 
-    print(o, e)
+    if o or e:
+        print(o, e)
 
     return result
 
