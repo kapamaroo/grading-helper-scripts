@@ -19,8 +19,8 @@ int redirected_printf(const char * format, ...) {
 
 	new_format = (char *)malloc((strlen(format)+1) * sizeof(char));
 	if (new_format == NULL)
-		return (-1);	
-	
+		return (-1);
+
 	start_str = stop_str = (char *)format;
 	*new_format = '\0';
 
@@ -36,14 +36,14 @@ int redirected_printf(const char * format, ...) {
 		}
 
 		/* Scan for the next conversion specifier or for % */
-		stop_str = strpbrk(start_str+1, "%diouxXeEfFgGaAcspnm"); 
+		stop_str = strpbrk(start_str+1, "%diouxXeEfFgGaAcspnm");
 		if (stop_str == NULL) { /* Format string error */
 			free(new_format);
 			return -1;
 		}
 
 		/* We wanted to just print a %. Strip it */
-		if (*stop_str == '%') { 
+		if (*stop_str == '%') {
 			start_str = stop_str+1;
 			continue;
 		}
@@ -51,7 +51,7 @@ int redirected_printf(const char * format, ...) {
 		strcat(new_format, "%");
 
 		/* Now check for length modifiers */
-		interm_str[0] = '\0';
+		memset(interm_str, 0, sizeof(interm_str));
 		len_mod = strpbrk(start_str+1, "hlqLjzZt");
 		if (len_mod != NULL && len_mod < stop_str) {
 			interm_str[0] = *len_mod;
@@ -67,10 +67,10 @@ int redirected_printf(const char * format, ...) {
 					interm_str[2] = '\0';
 				}
 			} else
-				interm_str[1] = '\0';		
+				interm_str[1] = '\0';
 		}
 
-		/* finalize this token by adding potential length modifiers, 
+		/* finalize this token by adding potential length modifiers,
 		   the detected format specifier and a space */
 		sprintf(mini_str, "%s%c ", interm_str, *stop_str);
 
