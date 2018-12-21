@@ -132,15 +132,19 @@ def run_testcase(executable, testcase, flavor=""):
             return 100
         return 0
 
+    args = ""
+
     if os.path.isfile(testcase_in):
-        o, e, result = exec_task_block("./run.py %s%s%s --pass-stdin %s --match-stdout %s --testcase %s --grade %d"
+        o, e, result = exec_task_block("./run.py %s%s%s %s --pass-stdin %s --match-stdout %s --testcase %s --grade %d"
                                        %(NAME, executable, flavor,
+                                         args,
                                          testcase_in,
                                          testcase_out,
                                          os.path.basename(testcase_out), GRADING[testcase]))
     else:
-        o, e, result = exec_task_block("./run.py %s%s%s --match-stdout %s --testcase %s --grade %d"
+        o, e, result = exec_task_block("./run.py %s%s%s %s --match-stdout %s --testcase %s --grade %d"
                                        %(NAME, executable, flavor,
+                                         args,
                                          testcase_out,
                                          os.path.basename(testcase_out), GRADING[testcase]))
 
